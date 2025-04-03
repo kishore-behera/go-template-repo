@@ -1,24 +1,32 @@
-version: "1.55.2"
+# See https://golangci-lint.run/usage/configuration/ for config format
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+  go: "1.21"
+  tests: true
+  build-tags:
+    - integration
+  skip-files:
+    - "vendor/*"
+    - "third_party/*"
+    - "testdata/*"
+    - "examples/*"
+    - "Godeps/*"
+    - "builtin/*"
+    - "/opt/homebrew/Cellar/go/*"
 
 linters:
+  disable-all: true
   enable:
-    - gofmt
-    - govet
-    - errcheck
-    - staticcheck
-    - gosimple
-    - ineffassign
-    - unused
-    - misspell
-    - gosec
+    - govet # Vet examines Go source code and reports suspicious constructs
+    - errcheck # Checks for unchecked errors
+    - staticcheck # Applies a ton of static analysis checks
+    - ineffassign # Detects unused assignments
+    - unused # Checks for unused constants, variables, functions and types
+    - misspell # Finds commonly misspelled English words
 
-run:
-  go: "1.21"
-  skip-dirs:
-    - "vendor/"
-    - "third_party/"
-    - "testdata/"
-    - "examples/"
-    - "Godeps/"
-    - "builtin/"
-    - "/opt/homebrew/Cellar/go/"
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck

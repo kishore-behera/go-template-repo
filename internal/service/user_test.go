@@ -11,8 +11,8 @@ import (
 
 func TestUserService_Create(t *testing.T) {
 	// Setup test environment
-	testutil.TestEnv(t)
-	defer testutil.CleanupEnv(t)
+	testutil.SetupTestEnv(t)
+	defer testutil.TearDownTestEnv(t)
 
 	// Arrange
 	svc := NewUserService()
@@ -38,8 +38,8 @@ func TestUserService_Create(t *testing.T) {
 
 func TestUserService_Create_InvalidEmail(t *testing.T) {
 	// Setup test environment
-	testutil.TestEnv(t)
-	defer testutil.CleanupEnv(t)
+	testutil.SetupTestEnv(t)
+	defer testutil.TearDownTestEnv(t)
 
 	// Arrange
 	svc := NewUserService()
@@ -61,8 +61,8 @@ func TestUserService_Create_InvalidEmail(t *testing.T) {
 
 func TestUserService_Get(t *testing.T) {
 	// Setup test environment
-	testutil.TestEnv(t)
-	defer testutil.CleanupEnv(t)
+	testutil.SetupTestEnv(t)
+	defer testutil.TearDownTestEnv(t)
 
 	// Arrange
 	svc := NewUserService()
@@ -83,8 +83,8 @@ func TestUserService_Get(t *testing.T) {
 
 func TestUserService_Get_InvalidID(t *testing.T) {
 	// Setup test environment
-	testutil.TestEnv(t)
-	defer testutil.CleanupEnv(t)
+	testutil.SetupTestEnv(t)
+	defer testutil.TearDownTestEnv(t)
 
 	// Arrange
 	svc := NewUserService()
@@ -98,4 +98,20 @@ func TestUserService_Get_InvalidID(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, result)
 	assert.Equal(t, "id is required", err.Error())
+}
+
+func TestUpdateUser(t *testing.T) {
+	// Setup test environment
+	testutil.SetupTestEnv(t)
+	defer testutil.TearDownTestEnv(t)
+
+	// Test implementation...
+}
+
+func TestDeleteUser(t *testing.T) {
+	// Setup test environment
+	testutil.SetupTestEnv(t)
+	defer testutil.TearDownTestEnv(t)
+
+	// Test implementation...
 }

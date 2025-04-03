@@ -45,5 +45,8 @@ func main() {
 func handleRequest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(`{"message": "Welcome to Go Template API!"}`))
+	_, err := w.Write([]byte(`{"message": "Welcome to Go Template API!"}`))
+	if err != nil {
+		log.Printf("Error writing response: %v", err)
+	}
 }
