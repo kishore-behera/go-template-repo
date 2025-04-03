@@ -1,4 +1,4 @@
-.PHONY: help build test run clean docker-build docker-up docker-down docker-logs
+.PHONY: help build test run clean docker-build docker-up docker-down docker-logs install-linter lint
 
 # Default target
 .DEFAULT_GOAL := help
@@ -8,6 +8,9 @@ APP_NAME := app
 
 # Build directory
 BUILD_DIR := bin
+
+# Get GOPATH
+GOPATH := $(shell go env GOPATH)
 
 help: ## Display this help message
 	@echo "Usage: make [target]"
@@ -46,9 +49,15 @@ deps: ## Install dependencies
 	go mod tidy
 	go mod verify
 
-lint: ## Run linters
+install-linter: ## Install golangci-lint
+	@echo "Installing golangci-lint..."
+	@mkdir -p $(GOPATH)/bin
+	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(GOPATH)/bin v1.55.2
+	@echo "Installed golangci-lint successfully"
+
+lint: install-linter ## Run linters
 	@echo "Running linters..."
-	golangci-lint run
+	@$(GOPATH)/bin/golangci-lint run
 
 # Docker commands
 docker-build: ## Build Docker image

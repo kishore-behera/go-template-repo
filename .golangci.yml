@@ -1,10 +1,8 @@
-run:
-  timeout: 5m
+version: "1.55.2"
 
 linters:
   enable:
     - gofmt
-    - golint
     - govet
     - errcheck
     - staticcheck
@@ -14,23 +12,5 @@ linters:
     - misspell
     - gosec
 
-linters-settings:
-  govet:
-    check-shadowing: true
-  gosec:
-    excludes:
-      - G404 # Use of weak random number generator
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gosec
-        - errcheck
-        - dupl
-        - gosec
-
-output:
-  format: colored-line-number
-  print-issued-lines: true
-  print-linter-name: true
+run:
+  timeout: 5m
