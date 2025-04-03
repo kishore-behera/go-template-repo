@@ -5,10 +5,15 @@ import (
 	"testing"
 
 	"github.com/kbehera/go-template-repo/internal/model"
+	"github.com/kbehera/go-template-repo/internal/testutil"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUserService_Create(t *testing.T) {
+	// Setup test environment
+	testutil.TestEnv(t)
+	defer testutil.CleanupEnv(t)
+
 	// Arrange
 	svc := NewUserService()
 	ctx := context.Background()
@@ -32,6 +37,10 @@ func TestUserService_Create(t *testing.T) {
 }
 
 func TestUserService_Create_InvalidEmail(t *testing.T) {
+	// Setup test environment
+	testutil.TestEnv(t)
+	defer testutil.CleanupEnv(t)
+
 	// Arrange
 	svc := NewUserService()
 	ctx := context.Background()

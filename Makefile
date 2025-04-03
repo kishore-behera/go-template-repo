@@ -28,7 +28,7 @@ build: ## Build the application
 	@mkdir -p $(BUILD_DIR)
 	go build -o $(BUILD_DIR)/$(APP_NAME) cmd/app/main.go
 
-test: ## Run tests
+test: deps ## Run tests with updated dependencies
 	@echo "Running tests..."
 	go test -v ./...
 
@@ -44,6 +44,7 @@ clean: ## Clean build artifacts
 deps: ## Install dependencies
 	@echo "Installing dependencies..."
 	go mod tidy
+	go mod verify
 
 lint: ## Run linters
 	@echo "Running linters..."
