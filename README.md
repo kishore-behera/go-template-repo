@@ -12,8 +12,32 @@ A production-ready Go project template with best practices, standard project lay
 - 🛠️ **Build Automation**: Makefile with common development commands
 - 📚 **Documentation**: Ready for API docs, OpenAPI/Swagger specs
 - 🔍 **Code Analysis**: Static analysis and linting tools
+- 🗄️ **MongoDB Integration**: Pre-configured MongoDB with GORM
+- 📊 **Structured Logging**: Zap logger for production-grade logging
 
-## Quick Start
+## Using This Template
+
+### Method 1: GitHub Actions (Recommended)
+
+1. Go to the "Actions" tab in this repository
+2. Select "Create Repository from Template" workflow
+3. Click "Run workflow"
+4. Fill in the required information:
+   - Repository name
+   - Repository description
+   - Repository visibility (public/private)
+   - GitHub username or organization
+5. Click "Run workflow"
+
+The workflow will:
+- Create a new repository from this template
+- Update the module name in go.mod
+- Update repository name in README
+- Set up branch protection rules
+- Create standard issue labels
+- Create a welcome issue
+
+### Method 2: Manual Creation
 
 1. Click the "Use this template" button on GitHub
 2. Create a new repository with your desired name
@@ -33,7 +57,9 @@ A production-ready Go project template with best practices, standard project lay
 │   └── app/               # Application entry point
 ├── internal/              # Private application and library code
 │   ├── config/           # Configuration management
+│   ├── database/         # Database connection and models
 │   ├── handler/          # HTTP handlers
+│   ├── logger/           # Logging configuration
 │   ├── middleware/       # HTTP middleware
 │   ├── model/           # Data models
 │   └── service/         # Business logic
@@ -54,9 +80,10 @@ A production-ready Go project template with best practices, standard project lay
 ## Development Workflow
 
 ### Prerequisites
-- Go 1.23.4 or later
+- Go 1.21 or later
 - Make
 - Docker (optional, for containerized development)
+- MongoDB (if running locally)
 
 ### Getting Started
 
@@ -74,6 +101,22 @@ go build -o bin/app cmd/app/main.go
 ./bin/app
 ```
 
+### Docker Development
+
+```bash
+# Start all services (app, MongoDB, Redis)
+docker-compose up
+
+# Run in detached mode
+docker-compose up -d
+
+# Stop all services
+docker-compose down
+
+# View logs
+docker-compose logs -f
+```
+
 ### Available Make Commands
 
 ```bash
@@ -84,6 +127,26 @@ make run         # Run the application
 make clean       # Clean build artifacts
 make lint        # Run linters
 make fmt         # Format code
+```
+
+## Environment Variables
+
+Key environment variables:
+
+```env
+# Application
+GIN_MODE=debug
+PORT=8080
+
+# MongoDB
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB=appdb
+MONGODB_USER=admin
+MONGODB_PASSWORD=password
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
 ```
 
 ## Code Quality
@@ -110,10 +173,11 @@ The template uses golangci-lint with the following linters enabled:
 The template includes a GitHub Actions workflow that:
 1. Runs on push to main and pull requests
 2. Sets up Go environment
-3. Installs dependencies
-4. Runs tests
-5. Runs linters
-6. Ensures code quality
+3. Sets up MongoDB service
+4. Installs dependencies
+5. Runs tests
+6. Runs linters
+7. Ensures code quality
 
 ## Best Practices
 
@@ -168,4 +232,93 @@ If you find this template helpful, please consider:
 - Starring the repository
 - Reporting issues
 - Contributing improvements
-- Sharing with others 
+- Sharing with others
+
+## Kubernetes Deployment
+
+### Prerequisites
+- Kubernetes cluster
+- kubectl configured
+- Docker registry access
+
+### Building and Pushing Docker Image
+
+```bash
+# Build the image
+docker build -t your-registry/go-template:latest .
+
+# Push to registry
+docker push your-registry/go-template:latest
+```
+
+### Deploying to Kubernetes
+
+1. Create secrets:
+```bash
+# Create secrets from template
+kubectl create secret generic app-secrets \
+  --from-literal=mongodb-uri="mongodb://admin:password@mongodb:27017" \
+  --from-literal=mongodb-user="admin" \
+  --from-literal=mongodb-password="password"
+```
+
+2. Apply Kubernetes manifests:
+```bash
+# Apply all manifests
+kubectl apply -f k8s/
+
+# Or apply individually
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
+
+3. Verify deployment:
+```bash
+# Check pods
+kubectl get pods
+
+# Check services
+kubectl get svc
+
+# Check logs
+kubectl logs -f deployment/app
+```
+
+### Kubernetes Resources
+
+The template includes the following Kubernetes manifests:
+- `k8s/deployment.yaml`: Application deployment with 3 replicas
+- `k8s/service.yaml`: LoadBalancer service
+- `k8s/configmap.yaml`: Non-sensitive configuration
+- `k8s/secrets.yaml`: Sensitive data template
+
+Features:
+- Health checks (readiness and liveness probes)
+- Resource limits and requests
+- ConfigMap and Secret management
+- Load balancing
+- High availability (3 replicas)
+
+### Production Considerations
+
+1. **Security**
+   - Use a secrets management solution (e.g., HashiCorp Vault)
+   - Enable network policies
+   - Use RBAC for service accounts
+   - Enable pod security policies
+
+2. **Monitoring**
+   - Add Prometheus metrics
+   - Configure Grafana dashboards
+   - Set up alerting
+
+3. **Scaling**
+   - Configure HPA (Horizontal Pod Autoscaling)
+   - Set appropriate resource limits
+   - Use node affinity/anti-affinity
+
+4. **CI/CD**
+   - Add Kubernetes deployment to CI pipeline
+   - Use Helm for package management
+   - Implement blue-green deployments 
