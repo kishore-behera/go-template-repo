@@ -29,4 +29,4 @@ jobs:
         echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
         
     - name: Run linter
-      run: golangci-lint run --no-config -E govet,errcheck,staticcheck,ineffassign,unused,misspell --skip-files ".*_test.go" --skip-dirs "vendor,internal,opt" 
+      run: golangci-lint run --no-config -E govet,errcheck,staticcheck,ineffassign,unused,misspell --skip-files ".*_test.go" --skip-dirs "vendor,internal,opt,go/pkg/mod" 
