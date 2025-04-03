@@ -1,4 +1,4 @@
-.PHONY: help build test run clean
+.PHONY: help build test run clean docker-build docker-up docker-down docker-logs
 
 # Default target
 .DEFAULT_GOAL := help
@@ -48,5 +48,22 @@ deps: ## Install dependencies
 lint: ## Run linters
 	@echo "Running linters..."
 	golangci-lint run
+
+# Docker commands
+docker-build: ## Build Docker image
+	@echo "Building Docker image..."
+	docker build -t $(APP_NAME) .
+
+docker-up: ## Start Docker containers
+	@echo "Starting Docker containers..."
+	docker-compose up -d
+
+docker-down: ## Stop Docker containers
+	@echo "Stopping Docker containers..."
+	docker-compose down
+
+docker-logs: ## View Docker logs
+	@echo "Viewing Docker logs..."
+	docker-compose logs -f
 
 .DEFAULT_GOAL := help 
