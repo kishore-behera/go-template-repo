@@ -13,4 +13,12 @@ linters:
     - gosec
 
 run:
-  timeout: 5m
+  go: "1.21"
+  skip-dirs:
+    - "vendor/"
+    - "third_party/"
+    - "testdata/"
+    - "examples/"
+    - "Godeps/"
+    - "builtin/"
+    - "/opt/homebrew/Cellar/go/"
