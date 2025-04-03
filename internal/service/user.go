@@ -19,13 +19,22 @@ func NewUserService() *UserService {
 
 // Create creates a new user
 func (s *UserService) Create(ctx context.Context, user *model.User) (*model.User, error) {
-	// TODO: Add repository call to create user
 	// Validate user data
 	if user.Email == "" {
 		return nil, errors.New("email is required")
 	}
 
-	return user, nil
+	// Create new user with timestamps
+	newUser := model.NewUser(user.Email, user.FirstName, user.LastName)
+
+	// TODO: Add repository call to create user
+	// user, err := h.userService.Create(r.Context(), &user)
+	// if err != nil {
+	//     http.Error(w, err.Error(), http.StatusInternalServerError)
+	//     return
+	// }
+
+	return newUser, nil
 }
 
 // Get retrieves a user by ID

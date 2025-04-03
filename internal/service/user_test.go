@@ -58,3 +58,44 @@ func TestUserService_Create_InvalidEmail(t *testing.T) {
 	assert.Nil(t, result)
 	assert.Equal(t, "email is required", err.Error())
 }
+
+func TestUserService_Get(t *testing.T) {
+	// Setup test environment
+	testutil.TestEnv(t)
+	defer testutil.CleanupEnv(t)
+
+	// Arrange
+	svc := NewUserService()
+	ctx := context.Background()
+	id := "test-id"
+
+	// Act
+	result, err := svc.Get(ctx, id)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, result)
+	assert.Equal(t, id, result.ID)
+	assert.Equal(t, "example@example.com", result.Email)
+	assert.Equal(t, "John", result.FirstName)
+	assert.Equal(t, "Doe", result.LastName)
+}
+
+func TestUserService_Get_InvalidID(t *testing.T) {
+	// Setup test environment
+	testutil.TestEnv(t)
+	defer testutil.CleanupEnv(t)
+
+	// Arrange
+	svc := NewUserService()
+	ctx := context.Background()
+	id := ""
+
+	// Act
+	result, err := svc.Get(ctx, id)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Equal(t, "id is required", err.Error())
+}
