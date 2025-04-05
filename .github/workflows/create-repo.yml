@@ -28,7 +28,6 @@ permissions:
   issues: write
   pull-requests: write
   repository-projects: write
-  administration: write
 
 jobs:
   create-repo:
