@@ -41,7 +41,7 @@ jobs:
       - name: Create new repository
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.REPO_CREATION_TOKEN }}
           script: |
             const repoName = context.payload.inputs.repo_name;
             const description = context.payload.inputs.repo_description;
@@ -111,7 +111,7 @@ jobs:
             
       - name: Push template files to new repository
         run: |
-          git remote add new-repo https://${{ github.token }}@github.com/${{ github.event.inputs.owner }}/${{ github.event.inputs.repo_name }}.git
+          git remote add new-repo https://${{ secrets.REPO_CREATION_TOKEN }}@github.com/${{ github.event.inputs.owner }}/${{ github.event.inputs.repo_name }}.git
           git push -u new-repo main
           
       - name: Update module name
