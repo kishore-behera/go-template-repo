@@ -38,7 +38,7 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: Create new repository
+      - name: Create new repository and update files
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.REPO_CREATION_TOKEN }}
@@ -109,24 +109,62 @@ jobs:
               body: `## Getting Started\n\n1. Clone the repository\n2. Run \`go mod tidy\`\n3. Copy \`.env.example\` to \`.env\`\n4. Start coding!\n\n## Development\n\n- Follow the project structure\n- Write tests for new features\n- Update documentation as needed\n\n## Contributing\n\n1. Create a new branch\n2. Make your changes\n3. Submit a pull request\n\n## License\n\nThis project is licensed under the MIT License.`
             });
             
-      - name: Push template files to new repository
-        run: |
-          git remote add new-repo https://${{ secrets.REPO_CREATION_TOKEN }}@github.com/${{ github.event.inputs.owner }}/${{ github.event.inputs.repo_name }}.git
-          git push -u new-repo main
-          
-      - name: Update module name
-        run: |
-          cd /github/workspace
-          sed -i "s|module github.com/kishore-behera/go-template-repo|module github.com/${{ github.event.inputs.owner }}/${{ github.event.inputs.repo_name }}|g" go.mod
-          git add go.mod
-          git commit -m "chore: update module name"
-          git push new-repo main
-          
-      - name: Update README
-        run: |
-          cd /github/workspace
-          sed -i "s|go-template-repo|${{ github.event.inputs.repo_name }}|g" README.md
-          sed -i "s|Go Template Repository|${{ github.event.inputs.repo_description }}|g" README.md
-          git add README.md
-          git commit -m "chore: update repository name and description"
-          git push new-repo main 
+            // Copy files from template to new repository
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Function to recursively copy files
+            async function copyFiles(dir, baseDir = '') {
+              const files = fs.readdirSync(dir);
+              
+              for (const file of files) {
+                const filePath = path.join(dir, file);
+                const relativePath = path.join(baseDir, file);
+                const stats = fs.statSync(filePath);
+                
+                if (stats.isDirectory()) {
+                  // Skip .git directory
+                  if (file === '.git') continue;
+                  await copyFiles(filePath, relativePath);
+                } else {
+                  // Skip certain files
+                  if (file === '.env' || file === 'go.sum') continue;
+                  
+                  const content = fs.readFileSync(filePath, 'utf8');
+                  let updatedContent = content;
+                  
+                  // Update module name in go.mod
+                  if (file === 'go.mod') {
+                    updatedContent = content.replace(
+                      /module github\.com\/kishore-behera\/go-template-repo/,
+                      `module github.com/${owner}/${repoName}`
+                    );
+                  }
+                  
+                  // Update README.md
+                  if (file === 'README.md') {
+                    updatedContent = content
+                      .replace(/go-template-repo/g, repoName)
+                      .replace(/Go Template Repository/g, description);
+                  }
+                  
+                  try {
+                    // Create or update file in the new repository
+                    await github.rest.repos.createOrUpdateFileContents({
+                      owner: owner,
+                      repo: repoName,
+                      path: relativePath,
+                      message: `chore: add ${relativePath}`,
+                      content: Buffer.from(updatedContent).toString('base64'),
+                      branch: 'main'
+                    });
+                    console.log(`Added/updated file: ${relativePath}`);
+                  } catch (error) {
+                    console.error(`Error adding file ${relativePath}:`, error);
+                  }
+                }
+              }
+            }
+            
+            // Start copying files from the workspace
+            await copyFiles('/github/workspace'); 
