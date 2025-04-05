@@ -23,28 +23,38 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  repository-projects: write
+  administration: write
+
 jobs:
   create-repo:
     runs-on: ubuntu-latest
     steps:
-      - name: Create Repository
+      - name: Checkout template repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      - name: Create new repository
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const repoName = context.payload.inputs.repo_name;
             const description = context.payload.inputs.repo_description;
             const visibility = context.payload.inputs.repo_visibility;
             const owner = context.payload.inputs.owner;
             
-            // Create new repository from template
-            const response = await github.rest.repos.createUsingTemplate({
-              template_owner: context.repo.owner,
-              template_repo: context.repo.repo,
+            // Create new repository
+            const response = await github.rest.repos.createForAuthenticatedUser({
               name: repoName,
               description: description,
               private: visibility === 'private',
-              owner: owner,
-              include_all_branches: false
+              auto_init: true
             });
             
             console.log(`Repository created: ${response.data.html_url}`);
@@ -58,48 +68,6 @@ jobs:
               allow_squash_merge: true,
               allow_rebase_merge: true,
               delete_branch_on_merge: true
-            });
-            
-            // Create initial commit with updated module name
-            const moduleName = `github.com/${owner}/${repoName}`;
-            const goModContent = await github.rest.repos.getContent({
-              owner: owner,
-              repo: repoName,
-              path: 'go.mod'
-            });
-            
-            const updatedGoMod = Buffer.from(goModContent.data.content, 'base64')
-              .toString()
-              .replace(/module .*/, `module ${moduleName}`);
-            
-            await github.rest.repos.createOrUpdateFileContents({
-              owner: owner,
-              repo: repoName,
-              path: 'go.mod',
-              message: 'chore: update module name',
-              content: Buffer.from(updatedGoMod).toString('base64'),
-              sha: goModContent.data.sha
-            });
-            
-            // Create initial commit with updated README
-            const readmeContent = await github.rest.repos.getContent({
-              owner: owner,
-              repo: repoName,
-              path: 'README.md'
-            });
-            
-            const updatedReadme = Buffer.from(readmeContent.data.content, 'base64')
-              .toString()
-              .replace(/go-template-repo/g, repoName)
-              .replace(/Go Template Repository/g, description);
-            
-            await github.rest.repos.createOrUpdateFileContents({
-              owner: owner,
-              repo: repoName,
-              path: 'README.md',
-              message: 'chore: update repository name and description',
-              content: Buffer.from(updatedReadme).toString('base64'),
-              sha: readmeContent.data.sha
             });
             
             // Create branch protection rules
@@ -140,4 +108,26 @@ jobs:
               repo: repoName,
               title: 'Welcome to the project!',
               body: `## Getting Started\n\n1. Clone the repository\n2. Run \`go mod tidy\`\n3. Copy \`.env.example\` to \`.env\`\n4. Start coding!\n\n## Development\n\n- Follow the project structure\n- Write tests for new features\n- Update documentation as needed\n\n## Contributing\n\n1. Create a new branch\n2. Make your changes\n3. Submit a pull request\n\n## License\n\nThis project is licensed under the MIT License.`
-            }); 
+            });
+            
+      - name: Push template files to new repository
+        run: |
+          git remote add new-repo https://${{ github.token }}@github.com/${{ github.event.inputs.owner }}/${{ github.event.inputs.repo_name }}.git
+          git push -u new-repo main
+          
+      - name: Update module name
+        run: |
+          cd /github/workspace
+          sed -i "s|module github.com/kishore-behera/go-template-repo|module github.com/${{ github.event.inputs.owner }}/${{ github.event.inputs.repo_name }}|g" go.mod
+          git add go.mod
+          git commit -m "chore: update module name"
+          git push new-repo main
+          
+      - name: Update README
+        run: |
+          cd /github/workspace
+          sed -i "s|go-template-repo|${{ github.event.inputs.repo_name }}|g" README.md
+          sed -i "s|Go Template Repository|${{ github.event.inputs.repo_description }}|g" README.md
+          git add README.md
+          git commit -m "chore: update repository name and description"
+          git push new-repo main 
